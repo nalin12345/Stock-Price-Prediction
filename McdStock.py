@@ -6,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from matplotlib import style
 import datetime
+import pickle
 
 style.use('ggplot')
 
@@ -18,6 +19,7 @@ df = df[['Adj_Close', 'HL_PCT', 'PCT_change', 'Adj_Volume']]
 forecast_col = 'Adj_Close'
 df.fillna(value=-99999, inplace=True)
 forecast_out = int(math.ceil(0.01*len(df)))
+
 df['label']=df[forecast_col].shift(-forecast_out)
 
 X = np.array(df.drop(['label'], 1))
@@ -28,11 +30,16 @@ X = X[:-forecast_out]
 df.dropna(inplace=True)
 
 y = np.array(df['label'])
-
+#u can comment out the training part after using it as it is already loaded
 X_train , X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.2)
 clf = LinearRegression(n_jobs=-1)
 clf.fit(X_train, y_train)
 confidence = clf.score(X_test, y_test)
+print(confidence)
+with open('linearregression.pickle', 'wb') as f:
+    pickle.dump(clf, f)
+pickle_in = open('linearregression.pickle', 'rb')
+clf = pickle.load(pickle_in)
 
 forecast_set = clf.predict(X_lately)
 df['Forecast'] = np.nan
@@ -41,6 +48,7 @@ last_date = df.iloc[-1].name
 last_unix = last_date.timestamp()
 one_day = 86400
 next_unix = last_unix + one_day
+
 for i in forecast_set:
     next_date = datetime.datetime.fromtimestamp(next_unix)
     next_unix+= 86400
