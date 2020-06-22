@@ -18,7 +18,7 @@ df['PCT_change']= (df['Adj_Close']-df['Adj_Open'])/df['Adj_Open']*100.0
 df = df[['Adj_Close', 'HL_PCT', 'PCT_change', 'Adj_Volume']]
 forecast_col = 'Adj_Close'
 df.fillna(value=-99999, inplace=True)
-forecast_out = int(math.ceil(0.01*len(df)))
+forecast_out = int(math.ceil(0.1*len(df)))
 
 df['label']=df[forecast_col].shift(-forecast_out)
 
@@ -26,6 +26,8 @@ X = np.array(df.drop(['label'], 1))
 X = preprocessing.scale(X)
 X_lately = X[-forecast_out:]
 X = X[:-forecast_out]
+
+
 
 df.dropna(inplace=True)
 
